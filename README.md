@@ -15,9 +15,10 @@ This repository contains the code, data, and documentation for a capstone projec
 - Toronto Open Data Portal for sourcing public datasets
 
 📍 Data Sources & Licensing
-This project uses publicly available geographic data from the City of Toronto Open Data Portal and the Toronto Police Service Public Safety Data Portal. Specifically:
+This project uses publicly available geographic data and auto theft data from the City of Toronto Open Data Portal and the Toronto Police Service Public Safety Data Portal. Specifically:
 - Police Divisions: GeoJSON file outlining the boundaries of Toronto's police divisions.
 - Neighborhoods: GeoJSON file defining the official city neighborhood boundaries.
+- Auto theft data: A csv file containing all the auto theft events reported from 2014 to 2025.
 
 🔓 License
 These datasets are provided under the City of Toronto Open Data Licence, which permits:
