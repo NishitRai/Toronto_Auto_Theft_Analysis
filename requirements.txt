@@ -1,0 +1,7 @@
+streamlit 
+pandas 
+geopandas 
+plotly
+bokeh
+streamlit-bokeh
+xyzservices
