@@ -15,6 +15,7 @@ from bokeh.models import (
 from bokeh.palettes import YlOrRd9, Blues
 from bokeh.layouts import row
 import xyzservices.providers as xyz
+import math
 
 # Load json data file
 cols = ['EVENT_UNIQUE_ID', 'REPORT_YEAR', 'REPORT_MONTH', 'REPORT_DOW', 'REPORT_HOUR',
@@ -77,6 +78,7 @@ with tab1:
     plot_year.vbar(x=years_list, top=theft_by_year['THEFT_COUNT'], width=0.5, color=colors[::-1])
     plot_year.xaxis.axis_label = 'Year'
     plot_year.yaxis.axis_label = 'Number of thefts reported'
+    plot_year.xaxis.major_label_orientation = math.pi / 4
 
     data = {'x': years_list,
             'y': theft_by_year['THEFT_COUNT'],
@@ -84,7 +86,7 @@ with tab1:
     source = ColumnDataSource(data=data)
 
     labels = LabelSet(x='x', y='y', text='labels', level='glyph',
-                    x_offset=-12, y_offset=5, angle=0,
+                    x_offset=-12, y_offset=5, angle=0.785,
                     text_font_style = 'bold',
                     text_font_size = '10px', source=source)
 
@@ -102,6 +104,7 @@ with tab1:
     plot_yoy_percent.line(x=years_list, y=theft_by_year['THEFT_COUNT'])
     plot_yoy_percent.xaxis.axis_label = 'Year'
     plot_yoy_percent.yaxis.axis_label = 'Number of thefts reported'
+    plot_yoy_percent.xaxis.major_label_orientation = math.pi / 4
     percent_change = [str(x)+"%" for x in year_change_percent]
     percent_change[0] = ""
     data = {'x': years_list, 'y': theft_by_year['THEFT_COUNT'], 'labels': percent_change}
