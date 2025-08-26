@@ -1,6 +1,6 @@
 
 # About This Project
-This repository contains the code, data, and documentation for a capstone project focused on analyzing public safety and geographic patterns in Toronto. The project leverages spatial data — including police division boundaries and neighborhood definitions — to explore trends, visualize incidents, and support data-driven decision-making.
+This repository contains the code, data, and documentation for a capstone project focused on analyzing public safety and geographic patterns in Toronto. The project leverages spatial data(including police division boundaries and neighborhood definitions) to explore trends, visualize incidents, and support data-driven decision-making.
 
 🎯 Objectives
 - Integrate and visualize GeoJSON boundary data for Toronto neighborhoods and police divisions
