@@ -15,6 +15,7 @@ from bokeh.models import (
 from bokeh.palettes import YlOrRd9, Blues
 from bokeh.layouts import row
 import xyzservices.providers as xyz
+import math
 
 # Load json data file
 cols = ['EVENT_UNIQUE_ID', 'REPORT_YEAR', 'REPORT_MONTH', 'REPORT_DOW', 'REPORT_HOUR',
@@ -37,6 +38,29 @@ def get_geojson_for_year(selected_year):
     merged = gdf.merge(filtered_df, on='CATEGORY')
     return merged.to_json()
 
+# Inject custom HTML and JavaScript to detect browser
+st.markdown("""
+    <script>
+    const ua = navigator.userAgent;
+    const isOldSafari = /Safari/.test(ua) && !/Chrome/.test(ua) && (
+        ua.includes("Version/16.3") || ua.includes("Version/15") || ua.includes("Version/14")
+    );
+    const isIOS = /iPad|iPhone|iPod/.test(ua);
+
+    if (isOldSafari || isIOS) {
+        const warningDiv = document.createElement("div");
+        warningDiv.innerHTML = `
+            <div style="background-color:#fff3cd; color:#856404; padding:1em; border-radius:5px; border:1px solid #ffeeba; margin-bottom:1em;">
+                 <strong>Browser Compatibility Notice:</strong><br>
+                This app may not work properly on older versions of Safari or iPad browsers due to limited support for modern JavaScript features.<br>
+                Please use Chrome, Firefox, or Safari 16.4+ for the best experience.
+            </div>
+        `;
+        document.body.prepend(warningDiv);
+    }
+    </script>
+""", unsafe_allow_html=True)
+
 # Streamlit UI
 st.set_page_config(layout="wide")
 st.title('Toronto Auto Theft Analysis')
@@ -54,6 +78,7 @@ with tab1:
     plot_year.vbar(x=years_list, top=theft_by_year['THEFT_COUNT'], width=0.5, color=colors[::-1])
     plot_year.xaxis.axis_label = 'Year'
     plot_year.yaxis.axis_label = 'Number of thefts reported'
+    plot_year.xaxis.major_label_orientation = math.pi / 4
 
     data = {'x': years_list,
             'y': theft_by_year['THEFT_COUNT'],
@@ -61,7 +86,7 @@ with tab1:
     source = ColumnDataSource(data=data)
 
     labels = LabelSet(x='x', y='y', text='labels', level='glyph',
-                    x_offset=-12, y_offset=5, angle=0,
+                    x_offset=-12, y_offset=5, angle=0.785,
                     text_font_style = 'bold',
                     text_font_size = '10px', source=source)
 
@@ -73,12 +98,13 @@ with tab1:
     year_change_percent = theft_by_year['YoY_CHANGE_PERCENT']
 
     #Build the plots
-    plot_yoy_percent = figure(title="YoY percent change in Auto Thefts",
+    plot_yoy_percent = figure(title="YoY % Change in Auto Thefts",
                             tooltips="Thefts: @y", 
                             x_range=years_list, y_range=(0,14000))
     plot_yoy_percent.line(x=years_list, y=theft_by_year['THEFT_COUNT'])
     plot_yoy_percent.xaxis.axis_label = 'Year'
     plot_yoy_percent.yaxis.axis_label = 'Number of thefts reported'
+    plot_yoy_percent.xaxis.major_label_orientation = math.pi / 4
     percent_change = [str(x)+"%" for x in year_change_percent]
     percent_change[0] = ""
     data = {'x': years_list, 'y': theft_by_year['THEFT_COUNT'], 'labels': percent_change}
@@ -99,19 +125,40 @@ with tab1:
         streamlit_bokeh(plot_yoy_percent, use_container_width=True, theme='streamlit', key="percent_chart")
 
 with tab2:
-    st.subheader("Hour and Week of Day Insights")
+    st.subheader("Hour of Day Insights")
 
     hourly_df_year = autotheft_df_filtered.groupby(['REPORT_YEAR', 'OCC_HOUR']).size().reset_index(name='THEFT_COUNT')
     hourly_df_year['REPORT_YEAR'] = hourly_df_year['REPORT_YEAR'].astype(str)
 
+    legend_dict=dict(
+        x=0,
+        y=1.05,
+        xanchor='left',
+        yanchor='top',
+        orientation='h'
+    )
     col1, col2 = st.columns(2)
     with col1:
-        fig = px.line(hourly_df_year,
-                      x ='OCC_HOUR',
-                      y='THEFT_COUNT',
-                      color='REPORT_YEAR',
-                      markers='o',
-                      title='Total Thefts by Hour of the day')
+        fig = px.line(
+            hourly_df_year,
+            x='OCC_HOUR',
+            y='THEFT_COUNT',
+            color='REPORT_YEAR',
+            markers='o',
+            title='Total Thefts by Hour of the day',
+            custom_data=['REPORT_YEAR']
+            )
+        fig.update_traces(
+            hovertemplate="Hour: %{x}<br>Thefts: %{y}<br>Year: %{customdata[0]}<extra></extra>"
+        )
+        fig.update_layout(
+            xaxis_title='Hour of the day',
+            yaxis_title='Number of thefts',
+            legend_title='Year',
+            width=800, height=600,
+            xaxis=dict(range=[0, 23], tickmode='linear', tick0=0, dtick=1, tickangle=0),
+            legend=legend_dict
+            )
         st.plotly_chart(fig, key='hourly_chart')
     with col2:
         # Visualize for a year and check if it displays similar trend
@@ -130,16 +177,27 @@ with tab2:
             y=hourly_occ_df['THEFT_COUNT'], 
             mode='lines+markers', 
             name='Occurrence Hour'))
-        fig.update_layout(title='Thefts: Reporting Hour vs Occurrence Hour', xaxis_title='Hour of the day', yaxis_title='Number of Thefts')
+        fig.update_traces(
+            hovertemplate="Hour: %{x}<br>Thefts: %{y}<br><extra></extra>"
+        )
+        fig.update_layout(
+            title='Thefts: Reporting Hour vs Occurrence Hour (2014-2024)', 
+            xaxis_title='Hour of the day', 
+            yaxis_title='Number of thefts',
+            xaxis_range=[0,24],
+            width=800, height=600,
+            xaxis=dict(range=[0, 23], tickmode='linear', tick0=0, dtick=1, tickangle=0),
+            legend=legend_dict
+        )
         # Display
         st.plotly_chart(fig, key='rep_occ_chart')
 
 with tab3:
     st.subheader("Theft Density")
-    category = st.selectbox("Select Category", ["Police Divisions", "Neighbourhoods"])
+    category = st.selectbox("Select Category", ["Police Division", "Neighbourhood"])
 
     # Load data based on category selection
-    if category == "Neighbourhoods":
+    if category == "Neighbourhood":
         # Group based on neighbourhoods
         nh_yearly_df = autotheft_df_filtered.groupby(['REPORT_YEAR', 'NEIGHBOURHOOD_158']).size().reset_index(name='THEFTS')
         df = nh_yearly_df
@@ -159,7 +217,7 @@ with tab3:
     gdf = gdf.to_crs(epsg=3857)
 
     # Year Selector
-    selected_year = st.slider('Slect Year', min_value=int(df['REPORT_YEAR'].min()),
+    selected_year = st.slider('Select Year', min_value=int(df['REPORT_YEAR'].min()),
                             max_value=int(df['REPORT_YEAR'].max()),
                             value=int(df['REPORT_YEAR'].min()), step=1)
 
@@ -172,7 +230,7 @@ with tab3:
     # Create a Bokeh figure
     p = figure(title=f"Theft Density by {category} for {selected_year}",
             x_axis_type="mercator", y_axis_type="mercator",
-            width=900, height=600, tools="pan,wheel_zoom,reset")
+            width=800, height=600, tools="pan,wheel_zoom,reset")
 
     p.add_tile(xyz.CartoDB.Positron)
     p.patches('xs', 'ys', source=geo_source, 
