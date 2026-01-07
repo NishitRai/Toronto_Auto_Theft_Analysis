@@ -1,6 +1,6 @@
 
 # About This Project
-This repository contains the code, data, and documentation for a capstone project focused on analyzing public safety and geographic patterns in Toronto. The project leverages spatial data(including police division boundaries and neighborhood definitions) to explore trends, visualize incidents, and support data-driven decision-making.
+This repository contains the code, data, and documentation for a capstone project focused on analyzing public safety and geographic patterns in Toronto. The project leverages spatial data(including police division boundaries and neighborhood definitions) to explore trends, visualize incidents, and support data-driven decision-making. Check out the [Streamlit Dashboard App](https://torontoautotheftanalysis.streamlit.app/) to view the visualizations related to this project. 
 
 🎯 Objectives
 - Integrate and visualize GeoJSON boundary data for Toronto neighborhoods and police divisions
@@ -11,6 +11,7 @@ This repository contains the code, data, and documentation for a capstone projec
 🛠️ Tools & Technologies
 - Python (Pandas, GeoPandas, Folium, Plotly)
 - Jupyter Notebooks
+- Streamlit (Web App)
 - GitHub for version control and collaboration
 - Toronto Open Data Portal for sourcing public datasets
 
